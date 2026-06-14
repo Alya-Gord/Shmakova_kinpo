@@ -22,7 +22,21 @@ std::string Error::generate_message() {
     }
 };
 
-SubmatrixResult findMaxSubmatrix(const std::vector<std::vector<int>>& matrix, int rows, int cols) { return {}; }
+// Функция поиска самой большой подматрицы из одинаковых элементов
+SubmatrixResult findMaxSubmatrix(const std::vector<std::vector<int>>& matrix, int rows, int cols) {
+    SubmatrixResult res;
+    if (rows == 0 || cols == 0) return res;                                                          // Если матрица пустая, сразу завершаем работу функции
+
+    std::vector<std::vector<int>> consecutive_equal_elements(rows, std::vector<int>(cols, 0));       // Создаем вспомогательную матрицу для хранения длин одинаковых элементов
+    calculateRightLengths(matrix, rows, cols, consecutive_equal_elements);                           // Заполняем вспомогательную матрицу длинами подряд идущих одинаковых элементов
+
+    for (int row_index = 0; row_index < rows; row_index++) {                                         // Перебираем все элементы
+        for (int col_index = 0; col_index < cols; col_index++) {
+            scanDownwards(matrix, row_index, col_index, rows, consecutive_equal_elements, res);      // От каждой ячейки пытаемся построить прямоугольник вниз и найти максимальный
+        }
+    }
+    return res;
+}
 
 // Функция предварительного вычисления количества подряд идущих одинаковых элементов вправо для каждого элемента
 void calculateRightLengths(const std::vector<std::vector<int>>& matrix, int rows, int cols, std::vector<std::vector<int>>& len) {
