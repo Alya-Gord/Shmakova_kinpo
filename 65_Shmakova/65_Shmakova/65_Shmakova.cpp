@@ -7,3 +7,5 @@ int main()
 }
 
 SubmatrixResult findMaxSubmatrix(const std::vector<std::vector<int>>& matrix, int rows, int cols) { return {}; }
+
+void calculateRightLengths(const std::vector<std::vector<int>>&, int, int, std::vector<std::vector<int>>&) {}
