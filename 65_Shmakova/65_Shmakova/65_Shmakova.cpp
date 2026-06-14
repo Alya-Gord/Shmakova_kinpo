@@ -28,7 +28,15 @@ void calculateRightLengths(const std::vector<std::vector<int>>&, int, int, std::
 
 void scanDownwards(const std::vector<std::vector<int>>&, int, int, int, const std::vector<std::vector<int>>&, SubmatrixResult&) {}
 
-void updateMaxMatrix(int, int, int, int, int, SubmatrixResult&) {}
+void updateMaxMatrix(int area, int row, int col, int width, int height, SubmatrixResult& res) {
+    if (area > res.max_area) {               // Если площадь текущей подматрицы больше максимальной известной
+        res.max_area = area;                 // Обновляем рекорд максимальной площади
+        res.min_row = row;                   // Сохраняем номер верхней строки лучшей подматрицы
+        res.min_col = col;                   // Сохраняем номер левого столбца лучшей подматрицы
+        res.max_width = width;               // Сохраняем ширину найденной лучшей подматрицы
+        res.max_height = height;             // Сохраняем высоту найденной лучшей подматрицы
+    }
+}
 
 int main()
 {
