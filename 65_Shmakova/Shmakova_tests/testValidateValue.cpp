@@ -4,7 +4,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace SHmakova_tests
+namespace Shmakova_tests
 {
     TEST_CLASS(testValidateValue)
     {
