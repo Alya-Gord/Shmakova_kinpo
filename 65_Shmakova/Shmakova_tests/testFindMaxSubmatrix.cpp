@@ -10,6 +10,7 @@ namespace Shmakova_tests
     TEST_CLASS(testFindMaxSubmatrix)
     {
     public:
+		// Вспомогательная функция для проверки параметров найденной подматрицы.
         void AssertSubmatrix(int exp_area, int exp_row, int exp_col, int exp_w, int exp_h, const SubmatrixResult& res) {
             Assert::AreEqual(exp_area, res.max_area);
             Assert::AreEqual(exp_row, res.min_row);
@@ -18,14 +19,14 @@ namespace Shmakova_tests
             Assert::AreEqual(exp_h, res.max_height);
         }
 
-        // Подматрица является единичной
+		// Проверяем, что функция корректно обрабатывает единичную матрицу.
         TEST_METHOD(SingleElement) {
             std::vector<std::vector<int>> matrix = { {1} };
             SubmatrixResult res = findMaxSubmatrix(matrix, 1, 1);
             AssertSubmatrix(1, 0, 0, 1, 1, res);
         }
 
-        // Подматрица задана вектор-строкой
+		// Проверяем, что функция корректно работает с вектор-строкой.
         TEST_METHOD(VectorRow) {
             std::vector<std::vector<int>> matrix = {
                 {2, 4, 6},
@@ -36,7 +37,7 @@ namespace Shmakova_tests
             AssertSubmatrix(3, 1, 0, 3, 1, res);
         }
 
-        // Подматрица задана вектор-столбцом
+		// Проверяем, что функция корректно работает с вектор-столбцом.
         TEST_METHOD(VectorColumn) {
             std::vector<std::vector<int>> matrix = {
                 {1, 9, 4},
@@ -47,7 +48,7 @@ namespace Shmakova_tests
             AssertSubmatrix(3, 0, 1, 1, 3, res);
         }
 
-        // Наибольшая подматрица совпадает с матрицей 4*4
+		// Поверяем, что функция корректно обрабатывает матрицу, полностью состоящую из одинаковых элементов.
         TEST_METHOD(FullMatrixMatch) {
             std::vector<std::vector<int>> matrix = {
                 {1, 1, 1, 1},
@@ -59,7 +60,7 @@ namespace Shmakova_tests
             AssertSubmatrix(16, 0, 0, 4, 4, res);
         }
 
-        // Две подматрицы одинаковой размерности не пересекаются, выводим ближайшую
+        // Проверка, что когда две подматрицы одинаковой размерности не пересекаются, мы выводим ближайшую.
         TEST_METHOD(SelectionPrioritySubmatrix) {
             std::vector<std::vector<int>> matrix = {
                 {0, 1, 5, 5},
@@ -71,7 +72,7 @@ namespace Shmakova_tests
             AssertSubmatrix(4, 0, 2, 2, 2, res);
         }
 
-        // Подматрица находится в центре
+		// Проверяем корректную обработку разрыва в середине строки.
         TEST_METHOD(SubmatrixBreakInMiddle) {
             std::vector<std::vector<int>> matrix = {
                 {1, 1, 1},
@@ -82,7 +83,7 @@ namespace Shmakova_tests
             AssertSubmatrix(3, 0, 0, 3, 1, res);
         }
 
-        // Отрицательные числа
+        // Проверяем корректную обработку отрицательных чисел.
         TEST_METHOD(NegativeNumbers) {
             std::vector<std::vector<int>> matrix = {
                 {-5, -5, -5},
