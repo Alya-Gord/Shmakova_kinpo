@@ -11,3 +11,5 @@ SubmatrixResult findMaxSubmatrix(const std::vector<std::vector<int>>& matrix, in
 void calculateRightLengths(const std::vector<std::vector<int>>&, int, int, std::vector<std::vector<int>>&) {}
 
 void scanDownwards(const std::vector<std::vector<int>>&, int, int, int, const std::vector<std::vector<int>>&, SubmatrixResult&) {}
+
+void updateMaxMatrix(int, int, int, int, int, SubmatrixResult&) {}
