@@ -24,7 +24,20 @@ std::string Error::generate_message() {
 
 SubmatrixResult findMaxSubmatrix(const std::vector<std::vector<int>>& matrix, int rows, int cols) { return {}; }
 
-void calculateRightLengths(const std::vector<std::vector<int>>&, int, int, std::vector<std::vector<int>>&) {}
+// Функция предварительного вычисления количества подряд идущих одинаковых элементов вправо для каждого элемента
+void calculateRightLengths(const std::vector<std::vector<int>>& matrix, int rows, int cols, std::vector<std::vector<int>>& len) {
+    for (int row_index = 0; row_index < rows; row_index++) {                                            // Проходимся по каждой строке матрицы
+        len[row_index][cols - 1] = 1;                                                                   // Для самого правого элемента длина цепочки всегда равна 1
+        for (int col_index = cols - 2; col_index >= 0; col_index--) {                                   // Идем справа налево, пропуская самый правый элемент
+
+            if (matrix[row_index][col_index] == matrix[row_index][col_index + 1])                       // Если текущий элемент равен соседу справа
+                len[row_index][col_index] = len[row_index][col_index + 1] + 1;                          // Длина цепочки для текущего равна длине цепочки соседа + 1
+			else                                                                                        // Иначе цепочка прерывается
+                len[row_index][col_index] = 1;
+
+        }
+    }
+}
 
 void scanDownwards(const std::vector<std::vector<int>>&, int, int, int, const std::vector<std::vector<int>>&, SubmatrixResult&) {}
 
