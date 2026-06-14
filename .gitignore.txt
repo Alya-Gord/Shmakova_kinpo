@@ -1,0 +1,9 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.ipch
+*.db
+x64/
+Debug/
+Release/
