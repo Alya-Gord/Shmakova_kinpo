@@ -39,8 +39,26 @@ void calculateRightLengths(const std::vector<std::vector<int>>& matrix, int rows
     }
 }
 
-void scanDownwards(const std::vector<std::vector<int>>&, int, int, int, const std::vector<std::vector<int>>&, SubmatrixResult&) {}
+// Функция поиска максимального прямоугольника вниз от стартового элемента
+void scanDownwards(const std::vector<std::vector<int>>& matrix, int start_row, int start_col, int rows,
+    const std::vector<std::vector<int>>& len, SubmatrixResult& res) {
+    int current_min_width = len[start_row][start_col];                                         // Изначально ширина равна длине цепочки одинаковых элементов в текущей строке
+    int target_value = matrix[start_row][start_col];                                           // Запоминаем значение элемента, из которого строим прямоугольник
 
+    // Спускаемся вниз по столбцу, пока не выйдем за пределы матрицы и пока значения совпадают со стартовым
+    for (int row = start_row; row < rows && matrix[row][start_col] == target_value; row++) {
+        if (len[row][start_col] < current_min_width)                                           // Если цепочка одинаковых элементов в текущей строке короче
+            current_min_width = len[row][start_col];                                           // Обновить минимальную ширину
+
+        int height = row - start_row + 1;                                                      // Вычислить высоту прямоугольника на текущем шаге
+        int area = current_min_width * height;                                                 // Вычислить площадь получившегося прямоугольника
+
+        // Проверить, не является ли новый прямоугольник самым большим из найденных
+        updateMaxMatrix(area, start_row, start_col, current_min_width, height, res);
+    }
+}
+
+// Функция обновления параметров максимальной найденной подматрицы, если текущая площадь больше известной.
 void updateMaxMatrix(int area, int row, int col, int width, int height, SubmatrixResult& res) {
     if (area > res.max_area) {               // Если площадь текущей подматрицы больше максимальной известной
         res.max_area = area;                 // Обновляем рекорд максимальной площади
