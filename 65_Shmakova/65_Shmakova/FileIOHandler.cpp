@@ -111,5 +111,20 @@ void FileIOHandler::readMatrix(const std::string& filename, int& cols, int& rows
     if (row_index != rows) throw Error{ DIMENSION_MISMATCH };
 }
 
-// Метод записи результата в выходной файл.
-void FileIOHandler::writeResult(const std::string& filename, const std::vector<std::vector<int>>& matrix, const SubmatrixResult& res) {}
+// Метод записи результата в выходной файл
+void FileIOHandler::writeResult(const std::string& filename, const std::vector<std::vector<int>>& matrix, const SubmatrixResult& res) {
+    std::unordered_set<std::string> extensions = { ".txt" };                           // Проверить расширение выходного файла
+    if (!checkExtension(filename, extensions)) throw Error{ INVALID_EXTENSION };       // Если расширение не совпало - выбросить ошибку
+
+    std::ofstream output_file(filename);                                               // Открываем файл для записи
+    if (!output_file.is_open()) throw Error{ OUTPUT_FILE_ERROR };                      // Если файл не удалось открыть - выбросить ошибку
+
+    // Проходимся по строкам и столбцам найденной лучшей подматрицы
+    for (int row_index = res.min_row; row_index < res.min_row + res.max_height; row_index++) {
+        for (int col_index = res.min_col; col_index < res.min_col + res.max_width; col_index++) {
+            // Записываем число в файл, добавляя пробел после каждого числа, кроме последнего в строке
+            output_file << matrix[row_index][col_index] << (col_index < res.min_col + res.max_width - 1 ? " " : "");
+        }
+        output_file << "\n";                                                           // Переходим на новую строку в файле после окончания строки матрицы
+    }
+}
