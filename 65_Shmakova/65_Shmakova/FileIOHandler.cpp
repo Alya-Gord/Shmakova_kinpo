@@ -55,7 +55,7 @@ void FileIOHandler::readMatrix(const std::string& filename, int& cols, int& rows
     std::string current_line;
     if (!std::getline(input_file, current_line)) throw Error{ NO_INPUT_DATA };
 
-    std::stringstream string_stream(current_line);
+	std::stringstream string_stream(current_line);
     std::vector<std::string> dimension_tokens;
     std::string token;
 
@@ -64,47 +64,51 @@ void FileIOHandler::readMatrix(const std::string& filename, int& cols, int& rows
     if (dimension_tokens.size() > 2) throw Error{ DIMENSION_TOO_MANY_NUMBERS };                       // Если чисел больше 2, размерность задана неверно
     if (dimension_tokens.size() < 2) throw Error{ DIMENSION_MISMATCH };                               // Если число 1, размерность задана неверно
 
-    try {
-        // Проверка на то, что числа размерности не являются дробными
-        if (dimension_tokens[0].find('.') != std::string::npos || dimension_tokens[1].find('.') != std::string::npos) throw Error{ DIMENSION_NOT_INTEGER };
+    // Пытаемся конвертировать первые два слова в числа, проверяя при этом, что они не являются дробными
+	try { 
+        if (dimension_tokens[0].find('.') != std::string::npos || dimension_tokens[1].find('.') != std::string::npos)
+            throw Error{ DIMENSION_NOT_INTEGER };
 
+		// Если конвертация прошла успешно, сохраняем количество строк и столбцов
         cols = std::stoi(dimension_tokens[0]);
         rows = std::stoi(dimension_tokens[1]);
-
-        // Проверка на то, что числа размерности не являются нулевыми или отрицательными
-        if (cols <= 0 || rows <= 0) throw Error{ DIMENSION_NEGATIVE };
     }
-    catch (...) { throw Error{ DIMENSION_NOT_INTEGER }; }                                      // При любой ошибке парсинга выбрасываем ошибку нецелочисленной размерности
+    catch (...) {
+		throw Error{ DIMENSION_NOT_INTEGER };                                                        // Если конвертация не удалась, выбрасываем ошибку
+    }
+
+    if (cols <= 0 || rows <= 0) throw Error{ DIMENSION_NEGATIVE };
 
     int row_index = 0;
     std::set<std::string> file_errors;
 
-    while (std::getline(input_file, current_line)) {                                           // Построчно считываем остаток файла
-        if (current_line.empty()) continue;                                                    // Пропускаем пустые строки
-
+    while (std::getline(input_file, current_line)) {
         std::stringstream row_stream(current_line);
         std::vector<int> row_data;
 
-        while (row_stream >> token) {                                                          // Читаем токены из строки до конца
+        while (row_stream >> token) {
             int value;
-            if (validateValue(token, value, file_errors))                                      // Вызываем валидацию элемента. Если элемент невалидный, он будет добавлен в множество ошибок
-                row_data.push_back(value);                                                     // Добавляем валидное число в строку
+            if (validateValue(token, value, file_errors))
+                row_data.push_back(value);
         }
 
-        if (row_data.size() != (size_t)cols && file_errors.empty())                            // Если количество чисел в строке не совпало с заявленным
-            throw Error{ ROW_FORMAT_ERROR, 0, "", row_index + 1, (int)row_data.size(), cols }; // Выбрасываем ошибку формата строки
+        if (row_data.empty() && file_errors.empty()) continue;
 
-        matrix.push_back(row_data);                                                            // Добавляем считанную строку в матрицу
-        row_index++;                                                                           // Увеличиваем счетчик считанных строк
+        if (row_data.size() != (size_t)cols && file_errors.empty())
+            throw Error{ ROW_FORMAT_ERROR, 0, "", row_index + 1, (int)row_data.size(), cols };
+
+        matrix.push_back(row_data);
+        row_index++;
     }
 
     // Если за время парсинга матрицы накопились ошибочные элементы
     if (!file_errors.empty()) {
         std::string combined_errors_string = "";
-        for (const auto& bad_token : file_errors) {                                            // Проходимся по всем собранным ошибочным токенам
-            combined_errors_string += bad_token + " ";                                         // Приклеиваем каждый токен в строку через пробел
+        for (const auto& bad_token : file_errors) {
+            if (!combined_errors_string.empty()) combined_errors_string += " ";
+            combined_errors_string += bad_token;
         }
-        throw Error{ INVALID_CHARACTER, 0, combined_errors_string };                           // Выбрасываем единое исключение, демонстрирующее все найденные невалидные элементы
+        throw Error{ INVALID_CHARACTER, 0, combined_errors_string };
     }
 
     if (row_index == 0) throw Error{ MATRIX_MISSING };
