@@ -85,6 +85,17 @@ void updateMaxMatrix(int area, int row, int col, int width, int height, Submatri
     }
 }
 
+/*! \mainpage Search Largest Submatrix Elements
+ *
+ * \section intro_sec Program functionality
+ *
+ * This program is designed to search for and select in a two-dimensional array a rectangular region of maximum area, consisting of identical integer elements.
+ *
+ * \section incstall_sec Using the program
+ *
+ * 65_Shmakova.exe input.txt output.txt
+ */
+
 // Функция main
 int main(int argc, char* argv[]) {
     if (argc != 3) {                                                                                     // Проверяем, переданы ли ровно 3 аргумента
