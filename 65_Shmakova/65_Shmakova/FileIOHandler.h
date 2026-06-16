@@ -26,13 +26,28 @@ public:
     bool validateValue(const std::string& string_token, int& parsed_value, std::set<std::string>& error_elements);
 
 
-    /*! Метод чтения матрицы из файла
-    * \param[in] filename имя файла, из которого нужно прочитать матрицу
+    /*!
+     * \param[in] filename имя файла, из которого нужно прочитать матрицу
+     * \param[in] cols переменная, в которую будет записано количество столбцов
+     * \param[in] rows переменная, в которую будет записано количество строк
+     * \param[in] matrix переменная, в которую будет записана считанная матрица
+     */
+    void readMatrix(const std::string& filename, int& cols, int& rows, std::vector<std::vector<int>>& matrix);
+
+    /*!
+    * \param[in] input_file открытие файлового потока, указывающий на начало данных матрицы
+    * \param[in] cols ожидаемое количество столбцов в каждой строке
+    * \param[in] rows ожидаемое общее количество строк
+    * \param[in] matrix ссылка на двумерный вектор, в который будут записаны валидные данные
+    */
+    void readMatrixRows(std::ifstream& input_file, int cols, int rows, std::vector<std::vector<int>>& matrix);
+
+    /*!
+    * \param[in] line строка, содержащая размерности матрицы
     * \param[in] cols переменная, в которую будет записано количество столбцов
     * \param[in] rows переменная, в которую будет записано количество строк
-    * \param[in] matrix переменная, в которую будет записана считанная матрица
     */
-    void readMatrix(const std::string& filename, int& cols, int& rows, std::vector<std::vector<int>>& matrix);
+    void parseDimensions(const std::string& line, int& cols, int& rows);
 
 
     /*! Метод вывода результата в файл
