@@ -3,6 +3,7 @@
 
 // Перечисление для типов ошибок, которые могут возникать при работе с файлами и данными
 enum ErrorType {
+    SOME_DEFAULT_VALUE,
     FILE_NOT_FOUND,
     OUTPUT_FILE_ERROR,
     DIMENSION_MISMATCH,
@@ -21,12 +22,12 @@ enum ErrorType {
 
 // Структура для хранения информации об ошибке и генерации соответствующего сообщения
 struct Error {
-    ErrorType type;
-    int incorrect_value;
+    ErrorType type = ErrorType::SOME_DEFAULT_VALUE;
+    int incorrect_value = 0;
     std::string token;
-    int row;
-    int actual_count;
-    int expected_count;
+    int row = 0;
+    int actual_count = 0;
+    int expected_count = 0;
 
     std::string generate_message();
 };
