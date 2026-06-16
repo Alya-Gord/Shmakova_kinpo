@@ -41,67 +41,72 @@ bool FileIOHandler::validateValue(const std::string& token, int& value, std::set
     return true;                                                                                          // Если все проверки пройдены, возвращаем true
 }
 
-// Метод чтения матрицы из файла с полной валидацией данных
-void FileIOHandler::readMatrix(const std::string& filename, int& cols, int& rows, std::vector<std::vector<int>>& matrix) {
-    // Проверяем расширение файла
-    std::unordered_set<std::string> extensions = { ".txt" };
-    if (!checkExtension(filename, extensions)) throw Error{ INVALID_EXTENSION };
-
-    // Если файл не открылся, выбрасываем ошибку
-    std::ifstream input_file(filename);
-    if (!input_file.is_open()) throw Error{ FILE_NOT_FOUND };
-
-    // Пытаемся считать первую строку. Если пусто - ошибка
-    std::string current_line;
-    if (!std::getline(input_file, current_line)) throw Error{ NO_INPUT_DATA };
-
-	std::stringstream string_stream(current_line);
+// Метод парсинга первой строки с размерностями матрицы и валидации полученных данных
+void FileIOHandler::parseDimensions(const std::string& line, int& cols, int& rows) {
+    std::stringstream string_stream(line);
     std::vector<std::string> dimension_tokens;
     std::string token;
 
-    while (string_stream >> token) dimension_tokens.push_back(token);                                 // Разбиваем первую строку на слова по пробелам
-    if (dimension_tokens.empty()) throw Error{ NO_INPUT_DATA };                                       // Если слов нет - файл пуст
-    if (dimension_tokens.size() > 2) throw Error{ DIMENSION_TOO_MANY_NUMBERS };                       // Если чисел больше 2, размерность задана неверно
-    if (dimension_tokens.size() < 2) throw Error{ DIMENSION_MISMATCH };                               // Если число 1, размерность задана неверно
+    // Извлекаем все слова из строки, чтобы проконтролировать точное количество аргументов
+    while (string_stream >> token) {
+        dimension_tokens.push_back(token);
+    }
 
-    // Пытаемся конвертировать первые два слова в числа, проверяя при этом, что они не являются дробными
-	try { 
-        if (dimension_tokens[0].find('.') != std::string::npos || dimension_tokens[1].find('.') != std::string::npos)
-            throw Error{ DIMENSION_NOT_INTEGER };
+    // Валидируем полученные значения и выбрасываем исключение в случае обнаружения ошибок
+    if (dimension_tokens.empty()) throw Error{ NO_INPUT_DATA };
+    if (dimension_tokens.size() > 2) throw Error{ DIMENSION_TOO_MANY_NUMBERS };
+    if (dimension_tokens.size() < 2) throw Error{ DIMENSION_MISMATCH };
 
-		// Если конвертация прошла успешно, сохраняем количество строк и столбцов
+    // Проверяем, не являются ли размерности дробными числами
+    try {
+        if (dimension_tokens[0].find('.') != std::string::npos ||
+            dimension_tokens[1].find('.') != std::string::npos) {
+            throw Error{ DIMENSION_NOT_INTEGER };  // В случае обнаружения точки в любом из токенов, выбрасываем исключение.
+        }
+
+        // Конвертируем строковые токены в целочисленные значения
         cols = std::stoi(dimension_tokens[0]);
         rows = std::stoi(dimension_tokens[1]);
     }
     catch (...) {
-		throw Error{ DIMENSION_NOT_INTEGER };                                                        // Если конвертация не удалась, выбрасываем ошибку
+        throw Error{ DIMENSION_NOT_INTEGER }; // Если конвертация не удалась, выбрасываем исключение.
     }
 
+    // Проверяем, что полученные размерности положительные числа
     if (cols <= 0 || rows <= 0) throw Error{ DIMENSION_NEGATIVE };
+}
 
+// Метод чтения строк матрицы из файла с валидацией данных
+void FileIOHandler::readMatrixRows(std::ifstream& input_file, int cols, int rows, std::vector<std::vector<int>>& matrix) {
+    std::string current_line;
     int row_index = 0;
     std::set<std::string> file_errors;
 
+    // Читаем файл построчно, начиная со второй строки, и валидируем каждую строку и каждый элемент в ней
     while (std::getline(input_file, current_line)) {
         std::stringstream row_stream(current_line);
         std::vector<int> row_data;
+        std::string token;
 
+        // Поэлементный разбор и валидация текущей строки
         while (row_stream >> token) {
             int value;
-            if (validateValue(token, value, file_errors))
-                row_data.push_back(value);
+            // Если элемент прошел валидацию, добавляем его в текущую строку данных
+            if (validateValue(token, value, file_errors)) { row_data.push_back(value); }
         }
 
-        if (row_data.empty() && file_errors.empty()) continue;
+        if (row_data.empty() && file_errors.empty()) continue;       // Игнорируем пустые строки, если в них не было найдено ошибочных символов
 
-        if (row_data.size() != (size_t)cols && file_errors.empty())
-            throw Error{ ROW_FORMAT_ERROR, 0, "", row_index + 1, (int)row_data.size(), cols };
+        // Если в строке нет ошибок, но количество элементов не совпало с заявленным количеством столбцов, выбрасываем исключение
+        if (row_data.size() != static_cast<size_t>(cols) && file_errors.empty()) {
+            throw Error{ ROW_FORMAT_ERROR, 0, "", row_index + 1, static_cast<int>(row_data.size()), cols };
+        }
 
-        matrix.push_back(row_data);
+        matrix.push_back(row_data);    // Добавляем валидную строку данных в матрицу
         row_index++;
     }
 
-    // Если за время парсинга матрицы накопились ошибочные элементы
+    // Если за время парсинга матрицы накопились ошибочные элементы, формируем строку с перечислением всех таких элементов и выбрасываем исключение
     if (!file_errors.empty()) {
         std::string combined_errors_string = "";
         for (const auto& bad_token : file_errors) {
@@ -111,8 +116,31 @@ void FileIOHandler::readMatrix(const std::string& filename, int& cols, int& rows
         throw Error{ INVALID_CHARACTER, 0, combined_errors_string };
     }
 
+    // Финальная сверка фактического количества прочитанных строк с заявленной размерностью
     if (row_index == 0) throw Error{ MATRIX_MISSING };
     if (row_index != rows) throw Error{ DIMENSION_MISMATCH };
+}
+
+// Метод чтения матрицы из файла с полной валидацией данных
+void FileIOHandler::readMatrix(const std::string& filename, int& cols, int& rows, std::vector<std::vector<int>>& matrix) {
+    std::unordered_set<std::string> extensions = { ".txt" };
+
+    // Проверяем расширение файла. Если расширение не совпало - выбрасываем исключение
+    if (!checkExtension(filename, extensions)) throw Error{ INVALID_EXTENSION };
+
+    // Открываем файл для чтения. Если файл не открылся, выбрасываем исключение
+    std::ifstream input_file(filename);
+    if (!input_file.is_open()) throw Error{ FILE_NOT_FOUND };
+
+    // Пытаемся считать первую строку. Если пусто - выбрасываем исключение
+    std::string first_line;
+    if (!std::getline(input_file, first_line)) throw Error{ NO_INPUT_DATA };
+
+    // Парсим размерности матрицы и валидируем полученные данные. Если обнаружены ошибки, выбрасываем исключение
+    parseDimensions(first_line, cols, rows);
+
+    // Читаем строки матрицы из файла, валидируя каждую строку и каждый элемент. Если обнаружены ошибки, выбрасываем исключение
+    readMatrixRows(input_file, cols, rows, matrix);
 }
 
 // Метод записи результата в выходной файл
