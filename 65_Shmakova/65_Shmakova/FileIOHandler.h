@@ -18,36 +18,38 @@ public:
 
 
     /*! Метод валидации полученных значений
-    * \param[in] string_token строковое представление токена, который нужно проверить
-    * \param[in] parsed_value переменная, в которую будет записано числовое значение, если валидация прошла успешно
-    * \param[in] error_elements множество, в которое будет добавлено строковое представление токена, если валидация не прошла
-    * \return true или false в зависимости от того, прошло ли значение валидацию
+    * \param[in] token строковое представление токена, который нужно проверить
+    * \param[out] value переменная, в которую будет записано числовое значение
+    * \param[out] float_errors множество для накопления ошибок вещественных чисел
+    * \param[out] invalid_char_errors множество для накопления ошибок символов
+    * \param[out] out_of_range_errors вектор для накопления ошибок выхода за диапазон
+    * \return true, если валидация прошла успешно, иначе false
     */
-    bool validateValue(const std::string& string_token, int& parsed_value, std::set<std::string>& error_elements);
+    bool validateValue(const std::string& token, int& value, std::set<std::string>& float_errors,
+        std::set<std::string>& invalid_char_errors, std::vector<int>& out_of_range_errors);
 
-
-    /*!
-     * \param[in] filename имя файла, из которого нужно прочитать матрицу
-     * \param[in] cols переменная, в которую будет записано количество столбцов
-     * \param[in] rows переменная, в которую будет записано количество строк
-     * \param[in] matrix переменная, в которую будет записана считанная матрица
-     */
-    void readMatrix(const std::string& filename, int& cols, int& rows, std::vector<std::vector<int>>& matrix);
-
-    /*!
-    * \param[in] input_file открытие файлового потока, указывающий на начало данных матрицы
-    * \param[in] cols ожидаемое количество столбцов в каждой строке
-    * \param[in] rows ожидаемое общее количество строк
-    * \param[in] matrix ссылка на двумерный вектор, в который будут записаны валидные данные
+    /*! Метод чтения содержимого текстового файла
+    * \param[in] filename путь к файлу, который необходимо прочитать
+    * \return вектор строк, где каждый элемент соответствует одной строке файла
     */
-    void readMatrixRows(std::ifstream& input_file, int cols, int rows, std::vector<std::vector<int>>& matrix);
+    std::vector<std::string> readText(const std::string& filename) const;
 
-    /*!
-    * \param[in] line строка, содержащая размерности матрицы
-    * \param[in] cols переменная, в которую будет записано количество столбцов
-    * \param[in] rows переменная, в которую будет записано количество строк
+
+    /*! Метод парсинга строки для получения размерностей матрицы
+    * \param[in] line строка, содержащая размеры
+    * \param[out] cols переменная, в которую будет записано количество столбцов
+    * \param[out] rows переменная, в которую будет записано количество строк
     */
-    void parseDimensions(const std::string& line, int& cols, int& rows);
+    void parseDimensions(const std::string& line, int& cols, int& rows) const;
+
+
+    /*! Метод чтения размерностей и данных матрицы из списка строк
+    * \param[in] lines вектор строк, содержащий данные файла
+    * \param[out] cols переменная, в которую будет записано количество столбцов
+    * \param[out] rows переменная, в которую будет записано количество строк
+    * \param[out] matrix матрица, в которую будут записаны считанные данные
+    */
+    void readDimensionsAndMatrix(const std::vector<std::string>& lines, int& cols, int& rows, std::vector<std::vector<int>>& matrix);
 
 
     /*! Метод вывода результата в файл
