@@ -98,29 +98,31 @@ void updateMaxMatrix(int area, int row, int col, int width, int height, Submatri
 
 // Функция main
 int main(int argc, char* argv[]) {
-    if (argc != 3) {                                                                                     // Проверяем, переданы ли ровно 3 аргумента
-        Error err{ INVALID_ARGUMENTS };                                                                  // Формируем ошибку аргументов
-        std::cout << err.generate_message() << "\n";                                                     // Выводим сообщение в консоль
-        return 1;                                                                                        // Завершаем программу с кодом ошибки
-    }
-
     FileIOHandler io_handler;
     int cols = 0, rows = 0;
     std::vector<std::vector<int>> matrix;
 
+	// Пробуем выполнить основную логику программы
     try {
-        io_handler.readMatrix(argv[1], cols, rows, matrix);                                              // Пытаемся считать матрицу из файла
-        SubmatrixResult result = findMaxSubmatrix(matrix, rows, cols);                                   // Запускаем алгоритм поиска максимальной подматрицы
+		if (argc != 3) { throw Error{ INVALID_ARGUMENTS }; }                 // Проверяем, что количество аргументов командной строки равно 2. Иначе - выбрасываем ошибку
 
-        if (result.max_area == 0)                                                                        // Если площадь равна 0, значит подматрица не найдена
-            std::cout << Error{ MATRIX_MISSING }.generate_message() << "\n";                             // Выводим соответствующую ошибку
-        else
-            io_handler.writeResult(argv[2], matrix, result);                                             // Иначе записываем результат в файл
+		std::vector<std::string> lines = io_handler.readText(argv[1]);       // Читаем строки из входного файла
+
+		io_handler.readDimensionsAndMatrix(lines, cols, rows, matrix);       // Парсим строки для получения размерностей и данных матрицы
+
+		SubmatrixResult result = findMaxSubmatrix(matrix, rows, cols);       // Ищем параметры самой большой подматрицы из одинаковых элементов
+
+		if (result.max_area == 0) { throw Error{ MATRIX_MISSING }; }         // Если площадь найденной подматрицы равна нулю, считаем это ошибкой отсутствия матрицы
+
+		io_handler.writeResult(argv[2], matrix, result);                     // Записываем результат в выходной файл
+
+		std::cout << "Расчет успешно завершен! Результат сохранен в файл: " << argv[2] << "\n";   // Выводим сообщение об успешном завершении программы
+    }
+	// Если в процессе выполнения программы была выброшена ошибка, перехватываем её и выводим соответствующее сообщение
+    catch (const Error& e) {
+        std::cout << e.generate_message() << "\n";
+        return 1;
     }
 
-    catch (Error& e) {                                                                                   // Ловим сгенерированную структуру ошибки
-        std::cout << e.generate_message() << "\n";                                                       // Выводим сообщение в консоль
-        return 1; 
-    }
     return 0;
 }
