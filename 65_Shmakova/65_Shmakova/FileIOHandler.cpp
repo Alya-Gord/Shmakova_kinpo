@@ -87,6 +87,51 @@ std::vector<std::string> FileIOHandler::readText(const std::string& filename) co
     return lines;
 }
 
+// Метод парсинга строки для получения размерностей матрицы
+void FileIOHandler::parseDimensions(const std::string& line, int& cols, int& rows) const {
+
+    std::stringstream string_stream(line);
+    std::vector<std::string> dimension_tokens;
+    std::string token;
+
+	// Разбиваем строку на токены, используя пробел в качестве разделителя, и сохраняем их в вектор
+    while (string_stream >> token) { dimension_tokens.push_back(token); }
+
+	// Проверяем количество полученных токенов. Должно быть ровно 2 - для количества столбцов и строк. Иначе - выбрасываем соответствующую ошибку
+    if (dimension_tokens.empty()) throw Error{ NO_INPUT_DATA };
+    if (dimension_tokens.size() > 2) throw Error{ DIMENSION_TOO_MANY_NUMBERS };
+    if (dimension_tokens.size() < 2) throw Error{ DIMENSION_MISMATCH };
+
+	// Проверяем, что оба токена являются целыми числами. 
+    try {
+        // Если в токене обнаружена точка или запятая, считаем это ошибкой вещественного числа.
+        if (dimension_tokens[0].find('.') != std::string::npos || dimension_tokens[0].find(',') != std::string::npos ||
+            dimension_tokens[1].find('.') != std::string::npos || dimension_tokens[1].find(',') != std::string::npos) {
+            throw Error{ DIMENSION_NOT_INTEGER };
+        }
+
+        size_t size_cols, size_rows;
+
+        // Пытаемся конвертировать оба токена в целые числа.
+        cols = std::stoi(dimension_tokens[0], &size_cols);
+        rows = std::stoi(dimension_tokens[1], &size_rows);
+
+        // Если конвертировалась не вся строка, считаем это ошибкой недопустимых символов
+        if (size_cols != dimension_tokens[0].length() || size_rows != dimension_tokens[1].length()) {
+            throw Error{ DIMENSION_NOT_INTEGER };
+        }
+    }
+    catch (...) {
+        throw Error{ DIMENSION_NOT_INTEGER };
+    }
+
+	// Проверяем, что оба числа больше нуля. Иначе - выбрасываем ошибку
+    if (cols <= 0 || rows <= 0) { throw Error{ DIMENSION_NEGATIVE }; }
+	// Проверяем, что оба числа не превышают 100. Иначе - выбрасываем ошибку
+    if (cols > 100) { throw Error{ OUT_OF_RANGE, cols }; }
+    if (rows > 100) { throw Error{ OUT_OF_RANGE, rows }; }
+}
+
 // Метод записи результата в выходной файл
 void FileIOHandler::writeResult(const std::string& filename, const std::vector<std::vector<int>>& matrix, const SubmatrixResult& res) {
     std::unordered_set<std::string> extensions = { ".txt" };                           // Проверить расширение выходного файла
@@ -103,4 +148,5 @@ void FileIOHandler::writeResult(const std::string& filename, const std::vector<s
         }
         output_file << "\n";                                                           // Переходим на новую строку в файле после окончания строки матрицы
     }
+	output_file.close();    // Закрываем файл после записи
 }
