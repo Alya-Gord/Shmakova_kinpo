@@ -132,6 +132,79 @@ void FileIOHandler::parseDimensions(const std::string& line, int& cols, int& row
     if (rows > 100) { throw Error{ OUT_OF_RANGE, rows }; }
 }
 
+// Метод чтения размерностей и данных матрицы из списка строк
+void FileIOHandler::readDimensionsAndMatrix(const std::vector<std::string>& lines, int& cols, int& rows, std::vector<std::vector<int>>& matrix) {
+	// Проверяем, что вектор строк не пустой. Если он пустой, считаем это ошибкой отсутствия входных данных
+    if (lines.empty()) { throw Error{ NO_INPUT_DATA }; }
+
+	// Парсим первую строку для получения размерностей матрицы
+    parseDimensions(lines[0], cols, rows);
+
+    std::set<std::string> float_errors;      
+    std::set<std::string> invalid_char_errors; 
+    std::vector<int> out_of_range_errors;     
+    int row_index = 0; 
+
+	// Проходим по каждой строке, начиная со второй, и парсим их для получения данных матрицы
+    for (size_t i = 1; i < lines.size(); ++i) {
+        std::stringstream row_stream(lines[i]);
+        std::vector<int> row_data; 
+        std::string token;
+
+		// Разбиваем строку на токены, используя пробел в качестве разделителя
+        while (row_stream >> token) {
+            int value;
+            
+			// Если токен прошел валидацию, добавляем его числовое значение в текущую строку матрицы
+            if (validateValue(token, value, float_errors, invalid_char_errors, out_of_range_errors)) {
+                row_data.push_back(value); 
+            }
+        }
+
+		// Если строка не содержит полезных данных и при этом не было обнаружено ошибок, пропускаем её
+        if (row_data.empty() && float_errors.empty() && invalid_char_errors.empty() && out_of_range_errors.empty()) { continue; }
+
+		// Если в строке не было обнаружено ошибок, но при этом количество элементов не совпало с заявленным количеством столбцов, выбрасываем ошибку
+        if (float_errors.empty() && invalid_char_errors.empty() && out_of_range_errors.empty()) {
+            if (row_data.size() != (size_t)cols) {
+                throw Error{ ROW_FORMAT_ERROR, 0, "", row_index + 1, (int)row_data.size(), cols };
+            }
+			// Если количество элементов в строке совпало с заявленным количеством столбцов, добавляем её в матрицу
+            matrix.push_back(row_data);
+            row_index++; 
+        }
+    }
+
+	// Если после обработки всех строк были обнаружены ошибки недопустимых символов, выбрасываем ошибку с перечислением всех таких токенов
+    if (!invalid_char_errors.empty()) {
+        std::string combined = "";
+        for (const auto& bad_token : invalid_char_errors) {
+            if (!combined.empty()) combined += " ";
+            combined += bad_token;
+        }
+        throw Error{ INVALID_CHARACTER, 0, combined }; 
+    }
+
+	// Если после обработки всех строк были обнаружены ошибки вещественных чисел, выбрасываем ошибку с перечислением всех таких токенов
+    if (!float_errors.empty()) {
+        std::string combined = "";
+        for (const auto& bad_token : float_errors) {
+            if (!combined.empty()) combined += " ";
+            combined += bad_token;
+        }
+        throw Error{ FLOAT_NUMBER, 0, combined }; 
+    }
+
+	// Если после обработки всех строк были обнаружены ошибки выхода за диапазон, выбрасываем ошибку с перечислением всех таких чисел
+    if (!out_of_range_errors.empty()) {
+        throw Error{ OUT_OF_RANGE, out_of_range_errors[0] };
+    }
+
+	// Если после обработки всех строк не было обнаружено ошибок, но при этом количество строк или столбцов не совпало с заявленным, выбрасываем ошибку
+    if (row_index == 0) throw Error{ MATRIX_MISSING };
+    if (row_index != rows) throw Error{ DIMENSION_MISMATCH };
+}
+
 // Метод записи результата в выходной файл
 void FileIOHandler::writeResult(const std::string& filename, const std::vector<std::vector<int>>& matrix, const SubmatrixResult& res) {
     std::unordered_set<std::string> extensions = { ".txt" };                           // Проверить расширение выходного файла
