@@ -56,16 +56,16 @@ namespace Shmakova_tests
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при попытке прочитать файл с недопустимым расширением.
         TEST_METHOD(InvalidExtension) {
             FileIOHandler handler;
-            bool isCorrrect = false;
+            bool isCorrect = false;
 
             try { 
                 handler.readText("input.bin");
-                isCorrrect = true;
+                isCorrect = true;
             }
             catch (const Error& e) { 
-                isCorrrect = (e.type == INVALID_EXTENSION);
+                isCorrect = (e.type == INVALID_EXTENSION);
             }
-            Assert::IsTrue(isCorrrect);
+            Assert::IsTrue(isCorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при попытке прочитать несуществующий файл.
