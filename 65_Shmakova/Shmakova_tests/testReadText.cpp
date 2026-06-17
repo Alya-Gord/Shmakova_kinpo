@@ -60,7 +60,7 @@ namespace Shmakova_tests
 
             try { 
                 handler.readText("input.bin");
-                isCorrect = true;
+                isCorrect = false;
             }
             catch (const Error& e) { 
                 isCorrect = (e.type == INVALID_EXTENSION);
@@ -75,7 +75,7 @@ namespace Shmakova_tests
 
             try { 
 				handler.readText("input.txt");
-				isCorrect = true;
+				isCorrect = false;
             }
             catch (const Error& e) { 
                 isCorrect = (e.type == FILE_NOT_FOUND); 
@@ -94,7 +94,7 @@ namespace Shmakova_tests
             try {
                 handler.readText(filename);
                 std::remove(filename.c_str());
-				isCorrect = true;
+				isCorrect = false;
             }
             catch (const Error& e) {
                 std::remove(filename.c_str());
