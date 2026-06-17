@@ -56,37 +56,37 @@ namespace Shmakova_tests
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при попытке прочитать файл с недопустимым расширением.
         TEST_METHOD(InvalidExtension) {
             FileIOHandler handler;
-            bool isCorrect = false;
+            bool incorrect = false;
 
             try { 
                 handler.readText("input.bin");
-                isCorrect = false;
+                incorrect = false;
             }
             catch (const Error& e) { 
-                isCorrect = (e.type == INVALID_EXTENSION);
+                incorrect = (e.type == INVALID_EXTENSION);
             }
-            Assert::IsTrue(isCorrect);
+            Assert::IsTrue(incorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при попытке прочитать несуществующий файл.
         TEST_METHOD(FileNotFound) {
             FileIOHandler handler;
-			bool isCorrect = false;
+			bool incorrect = false;
 
             try { 
 				handler.readText("input.txt");
-				isCorrect = false;
+				incorrect = false;
             }
             catch (const Error& e) { 
-                isCorrect = (e.type == FILE_NOT_FOUND); 
+                incorrect = (e.type == FILE_NOT_FOUND); 
             }
-            Assert::IsTrue(isCorrect);
+            Assert::IsTrue(incorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при попытке прочитать файл, который существует, но не содержит полезных данных.
         TEST_METHOD(EmptyFile) {
             FileIOHandler handler;
-			bool isCorrect = false;
+			bool incorrect = false;
             std::string filename = "input.txt";
             std::ofstream out(filename); 
             out.close();
@@ -94,13 +94,13 @@ namespace Shmakova_tests
             try {
                 handler.readText(filename);
                 std::remove(filename.c_str());
-				isCorrect = false;
+				incorrect = false;
             }
             catch (const Error& e) {
                 std::remove(filename.c_str());
-                isCorrect = (e.type == NO_INPUT_DATA);
+                incorrect = (e.type == NO_INPUT_DATA);
             }
-            Assert::IsTrue(isCorrect);
+            Assert::IsTrue(incorrect);
         }
     };
 }
