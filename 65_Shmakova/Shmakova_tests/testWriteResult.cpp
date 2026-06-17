@@ -16,6 +16,7 @@ namespace Shmakova_tests
         // Проверка, что при корректных данных результат записывается в файл без выбрасывания исключений.
         TEST_METHOD(CorrectDataNotThrowException) {
             FileIOHandler handler;
+			bool correctWrite = false;
             std::string filename = "output.txt";
             std::vector<std::vector<int>> matrix = {
                 {1, 2},
@@ -27,20 +28,21 @@ namespace Shmakova_tests
                 handler.writeResult(filename, matrix, res);
 
                 std::ifstream fileCheck(filename);
-                Assert::IsTrue(fileCheck.good());
+                correctWrite = fileCheck.good();
                 fileCheck.close();
-
                 std::remove(filename.c_str());
             }
             catch (const Error& e) {
                 std::remove(filename.c_str());
-                Assert::Fail();
+                correctWrite = false;
             }
+			Assert::IsTrue(correctWrite);
         }
 
         // Проверка, что при попытке записать результат в файл с недопустимым расширением выбрасывается исключение.
         TEST_METHOD(ThrowExtensionException) {
             FileIOHandler handler;
+			bool incorrectWrite = false;
             std::string filename = "output.csv";
             std::vector<std::vector<int>> matrix = {
                 {1, 2},
@@ -50,16 +52,18 @@ namespace Shmakova_tests
 
             try {
                 handler.writeResult(filename, matrix, res);
-                Assert::Fail();
+                incorrectWrite = false;
             }
             catch (const Error& e) {
-                Assert::IsTrue(e.type == INVALID_EXTENSION);
+                incorrectWrite = (e.type == INVALID_EXTENSION);
             }
+            Assert::IsTrue(incorrectWrite);
         }
 
         // Проверка, что при попытке записать результат в недопустимый файл выбрасывается исключение.
         TEST_METHOD(ThrowExceptionOutputFile) {
             FileIOHandler handler;
+			bool incorrectWrite = false;
             std::string filename = "output?.txt";
             std::vector<std::vector<int>> matrix = {
                 {1, 2},
@@ -69,13 +73,13 @@ namespace Shmakova_tests
 
             try {
                 handler.writeResult(filename, matrix, res);
-
                 std::remove(filename.c_str());
-                Assert::Fail();
+                incorrectWrite = false;
             }
             catch (const Error& e) {
-                Assert::IsTrue(e.type == OUTPUT_FILE_ERROR);
+                incorrectWrite = (e.type == OUTPUT_FILE_ERROR);
             }
+            Assert::IsTrue(incorrectWrite);
         }
     };
 }
