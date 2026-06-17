@@ -67,13 +67,28 @@ namespace Shmakova_tests
             Assert::IsTrue(incorrect);
         }
 
-		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче строки с числом, выходящим за допустимый диапазон.
-        TEST_METHOD(MoreThan100Error) {
+		// Проверяем, что функция выбрасывает исключение при передачи размерности столбцов, превышающей допустиые границы.
+        TEST_METHOD(MoreThan100Cols) {
             FileIOHandler handler; 
             int cols = 0, rows = 0;
 			bool incorrect = false;
             try { 
                 handler.parseDimensions("101 50", cols, rows); 
+                incorrect = false;
+            }
+            catch (const Error& e) {
+                incorrect = (e.type == OUT_OF_RANGE);
+            }
+            Assert::IsTrue(incorrect);
+        }
+
+        // Проверяем, что функция выбрасывает исключение при передачи размерности строк, превышающей допустиые границы.
+        TEST_METHOD(MoreThan100Rows) {
+            FileIOHandler handler;
+            int cols = 0, rows = 0;
+            bool incorrect = false;
+            try {
+                handler.parseDimensions("50 101", cols, rows);
                 incorrect = false;
             }
             catch (const Error& e) {
