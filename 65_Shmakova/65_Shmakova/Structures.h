@@ -29,7 +29,7 @@ struct Error {
     int actual_count = 0;
     int expected_count = 0;
 
-    std::string generate_message();
+    std::string generate_message() const;
 };
 
 // Структура для хранения результатов поиска подматрицы

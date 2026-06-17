@@ -4,7 +4,7 @@
 #include "FileIOHandler.h"
 
 // Структура для хранения информации об ошибке и генерации сообщения
-std::string Error::generate_message() {
+std::string Error::generate_message() const {
     {
         if (type == FILE_NOT_FOUND) return "Неверно указан файл с входными данными. Возможно, файл не существует.";
         if (type == OUTPUT_FILE_ERROR) return "Неверно указан файл для выходных данных. Проверьте права на запись.";
