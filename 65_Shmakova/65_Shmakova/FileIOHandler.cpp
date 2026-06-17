@@ -48,6 +48,44 @@ bool FileIOHandler::validateValue(const std::string& token, int& value, std::set
     return true;
 }
 
+// Метод чтения содержимого текстового файла и возвращения его в виде вектора строк
+std::vector<std::string> FileIOHandler::readText(const std::string& filename) const {
+	// Проверяем расширение входного файла на соответствие допустимому формату
+    std::unordered_set<std::string> extensions = { ".txt" };
+    if (!checkExtension(filename, extensions)) {
+        throw Error{ INVALID_EXTENSION };            // Завершаем работу, если формат файла неверный
+    }
+
+	// Открываем файл для чтения
+    std::ifstream input_file(filename);
+    // Проверяем физическое существование файла и права доступа на чтение
+    if (!input_file.is_open()) {
+        throw Error{ FILE_NOT_FOUND };             // Завершаем работу, если файл не удалось открыть
+    }
+
+    std::vector<std::string> lines;
+    std::string current_line;
+
+    // Построчно читаем файл, фильтруя строки, которые не содержат полезных данных
+    while (std::getline(input_file, current_line)) {
+        bool has_chars = std::any_of(current_line.begin(), current_line.end(), [](unsigned char c) {
+            return !std::isspace(c);
+            });
+
+        // Если строка содержит полезные данные, сохраняем её для дальнейшего парсинга
+        if (has_chars) {
+            lines.push_back(current_line);
+        }
+    }
+
+	// Если после фильтрации не осталось ни одной строки, считаем это ошибкой отсутствия входных данных
+    if (lines.empty()) {
+        throw Error{ NO_INPUT_DATA };
+    }
+
+	// Возвращаем вектор строк
+    return lines;
+}
 
 // Метод записи результата в выходной файл
 void FileIOHandler::writeResult(const std::string& filename, const std::vector<std::vector<int>>& matrix, const SubmatrixResult& res) {
