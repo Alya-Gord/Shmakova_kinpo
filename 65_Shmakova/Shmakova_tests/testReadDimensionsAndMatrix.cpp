@@ -35,36 +35,43 @@ namespace Shmakova_tests
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче пустого вектора строк.
         TEST_METHOD(EmptyTextVector) {
             FileIOHandler handler;
+			bool isCorrect = false;
             std::vector<std::vector<int>> matrix;
             std::vector<std::string> text = {};
             int cols = 0, rows = 0;
             try { 
-                handler.readDimensionsAndMatrix(text, cols, rows, matrix); Assert::Fail(); 
+                handler.readDimensionsAndMatrix(text, cols, rows, matrix); 
+                isCorrect = false; 
             }
             catch (const Error& e) { 
-                Assert::IsTrue(e.type == NO_INPUT_DATA); 
+                isCorrect = (e.type == NO_INPUT_DATA);
             }
+            Assert::IsTrue(isCorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче вектора строк, содержащего только строку с размерностями, но без данных матрицы.
         TEST_METHOD(MatrixMissingBody) {
             FileIOHandler handler;
+			bool isCorrect = false;
             std::vector<std::string> text = { 
                 {"2 2"} 
             };
             std::vector<std::vector<int>> matrix;
             int cols = 0, rows = 0;
             try { 
-                handler.readDimensionsAndMatrix(text, cols, rows, matrix); Assert::Fail(); 
+                handler.readDimensionsAndMatrix(text, cols, rows, matrix); 
+                isCorrect = false; 
             }
             catch (const Error& e) { 
-                Assert::IsTrue(e.type == MATRIX_MISSING); 
+                isCorrect = (e.type == MATRIX_MISSING); 
             }
+            Assert::IsTrue(isCorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче строки с количеством элементов, не совпадающим с заявленным количеством столбцов в одной строке.
         TEST_METHOD(RowFormatMismatch) {
             FileIOHandler handler;
+			bool isCorrect = false;
             std::vector<std::string> text = { 
                 {"2 2"}, 
                 {"1 2 3"}, 
@@ -73,16 +80,19 @@ namespace Shmakova_tests
             std::vector<std::vector<int>> matrix;
             int cols = 0, rows = 0;
             try { 
-                handler.readDimensionsAndMatrix(text, cols, rows, matrix); Assert::Fail(); 
+                handler.readDimensionsAndMatrix(text, cols, rows, matrix); 
+                isCorrect = false;
             }
             catch (const Error& e) { 
-                Assert::IsTrue(e.type == ROW_FORMAT_ERROR); 
+                isCorrect = (e.type == ROW_FORMAT_ERROR);
             }
+            Assert::IsTrue(isCorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче строки с количеством элементов, не совпадающим с заявленным количеством строк и столбцов.
         TEST_METHOD(RowCountMismatch) {
             FileIOHandler handler;
+			bool isCorrect = false;
             std::vector<std::string> text = { 
                 {"2 3"}, 
                 {"1 2"}, 
@@ -91,16 +101,19 @@ namespace Shmakova_tests
             std::vector<std::vector<int>> matrix;
             int cols = 0, rows = 0;
             try { 
-                handler.readDimensionsAndMatrix(text, cols, rows, matrix); Assert::Fail(); 
+                handler.readDimensionsAndMatrix(text, cols, rows, matrix); 
+                isCorrect = false;
             }
             catch (const Error& e) { 
-                Assert::IsTrue(e.type == DIMENSION_MISMATCH);
+                isCorrect = (e.type == DIMENSION_MISMATCH);
             }
+            Assert::IsTrue(isCorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче строки с недопустимыми символами.
         TEST_METHOD(InvalidCharInMatrix) {
             FileIOHandler handler;
+			bool isCorrect = false;
             std::vector<std::string> text = { 
                 {"2 2"}, 
                 {"1 text"}, 
@@ -109,16 +122,19 @@ namespace Shmakova_tests
             std::vector<std::vector<int>> matrix;
             int cols = 0, rows = 0;
             try { 
-                handler.readDimensionsAndMatrix(text, cols, rows, matrix); Assert::Fail(); 
+                handler.readDimensionsAndMatrix(text, cols, rows, matrix); 
+                isCorrect = false;
             }
             catch (const Error& e) { 
-                Assert::IsTrue(e.type == INVALID_CHARACTER); 
+                isCorrect = (e.type == INVALID_CHARACTER);
             }
+            Assert::IsTrue(isCorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче строки с числом в формате с плавающей точкой.
         TEST_METHOD(FloatInMatrix) {
             FileIOHandler handler;
+			bool isCorrect = false;
             std::vector<std::string> text = { 
                 {"2 2"}, 
                 {"1 2.5"}, 
@@ -127,16 +143,19 @@ namespace Shmakova_tests
             std::vector<std::vector<int>> matrix;
             int cols = 0, rows = 0;
             try { 
-                handler.readDimensionsAndMatrix(text, cols, rows, matrix); Assert::Fail(); 
+                handler.readDimensionsAndMatrix(text, cols, rows, matrix); 
+                isCorrect = false;
             }
             catch (const Error& e) { 
-                Assert::IsTrue(e.type == FLOAT_NUMBER); 
+                isCorrect = (e.type == FLOAT_NUMBER);
             }
+            Assert::IsTrue(isCorrect);
         }
 
 		// Проверяем, что функция выбрасывает исключение с правильным типом ошибки при передаче строки с числом, выходящим за допустимый диапазон.
         TEST_METHOD(OutOfRangeInMatrix) {
             FileIOHandler handler;
+			bool isCorrect = false;
             std::vector<std::string> text = { 
                 {"2 2"}, 
                 {"1 2"}, 
@@ -145,11 +164,13 @@ namespace Shmakova_tests
             std::vector<std::vector<int>> matrix;
             int cols = 0, rows = 0;
             try { 
-                handler.readDimensionsAndMatrix(text, cols, rows, matrix); Assert::Fail(); 
+                handler.readDimensionsAndMatrix(text, cols, rows, matrix); 
+                isCorrect = false;
             }
             catch (const Error& e) { 
-                Assert::IsTrue(e.type == OUT_OF_RANGE); 
+                isCorrect = (e.type == OUT_OF_RANGE);
             }
+            Assert::IsTrue(isCorrect);
         }
     };
 }
