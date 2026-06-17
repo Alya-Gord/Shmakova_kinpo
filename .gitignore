@@ -9,3 +9,5 @@ Debug/
 Release/
 *.vcxproj
 *.filters
+*.slnx
+docs/
