@@ -9,105 +9,95 @@ namespace Shmakova_tests
     TEST_CLASS(testValidateValue)
     {
     public:
-		// Проверяем, что валидные целые числа корректно парсятся и не добавляются в множество ошибок.
-        TEST_METHOD(ValidPositiveInteger) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsTrue(handler.validateValue("52", val, errs));
-            Assert::AreEqual(52, val);
-            Assert::IsTrue(errs.empty());
-        }
-
-		// Проверяем, что валидные отрицательные целые числа корректно парсятся и не добавляются в множество ошибок.
-        TEST_METHOD(ValidNegativeInteger) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsTrue(handler.validateValue("-52", val, errs));
-            Assert::AreEqual(-52, val);
-        }
-
-		// Проверяем, что валидное нулевое значение корректно парсится и не добавляется в множество ошибок.
-        TEST_METHOD(ValidZero) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsTrue(handler.validateValue("0", val, errs));
-            Assert::AreEqual(0, val);
-        }
-
-		// Проверяем, что граничные значения -1000 и 1000 корректно парсятся и не добавляются в множество ошибок.
-        TEST_METHOD(BoundaryValuesAccepted) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsTrue(handler.validateValue("1000", val, errs));
-            Assert::IsTrue(handler.validateValue("-1000", val, errs));
-        }
-
-		// Проверяем, что значения, выходящие за границы допустимого диапазона, не проходят валидацию и добавляются в множество ошибок.
-        TEST_METHOD(OutOfBoundsRejected) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsFalse(handler.validateValue("1001", val, errs));
-            Assert::IsTrue(errs.find("1001") != errs.end());
-
-            errs.clear();
-            Assert::IsFalse(handler.validateValue("-1001", val, errs));
-            Assert::IsTrue(errs.find("-1001") != errs.end());
-        }
-
-		// Проверяем, что числа с точкой не проходят валидацию и добавляются в множество ошибок.
-        TEST_METHOD(FloatsWithDotRejected) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsFalse(handler.validateValue("3.14", val, errs));
-            Assert::IsTrue(errs.find("3.14") != errs.end());
-        }
-
-		// Проверяем, что числа с запятой не проходят валидацию и добавляются в множество ошибок.
-        TEST_METHOD(FloatsWithCommaRejected) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsFalse(handler.validateValue("5,5", val, errs));
-            Assert::IsTrue(errs.find("5,5") != errs.end());
-        }
-
-		// Проверяем, что строки, не являющиеся числами, не проходят валидацию и добавляются в множество ошибок.
-        TEST_METHOD(GarbageLettersRejected) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsFalse(handler.validateValue("abc", val, errs));
-        }
-
-		// Проверяем, что строки, содержащие числа с буквами, не проходят валидацию и добавляются в множество ошибок.
-        TEST_METHOD(PartialGarbageRejected) {
-            FileIOHandler handler;
-            std::set<std::string> errs;
-            int val;
-            Assert::IsFalse(handler.validateValue("12a", val, errs));
-        }
         
-		// Проверяем, что пустые строки не проходят валидацию и добавляются в множество ошибок.
-        TEST_METHOD(EmptyStringRejected) {
+        TEST_METHOD(ValidPositiveValue) {
             FileIOHandler handler;
-            std::set<std::string> errs;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
             int val;
-            Assert::IsFalse(handler.validateValue("", val, errs));
+            Assert::IsTrue(handler.validateValue("52", val, floats, chars, ranges));
+            Assert::AreEqual(52, val);
+            Assert::IsTrue(floats.empty() && chars.empty() && ranges.empty());
         }
 
-		// Проверяем, что строки, выходящие за пределы диапазона int, не проходят валидацию и добавляются в множество ошибок.
-        TEST_METHOD(IntOverflowRejected) {
+        TEST_METHOD(ValidZeroAndNegativeValues) {
             FileIOHandler handler;
-            std::set<std::string> errs;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
             int val;
-            Assert::IsFalse(handler.validateValue("999999999999999999", val, errs));
-            Assert::IsTrue(errs.find("999999999999999999") != errs.end());
+            Assert::IsTrue(handler.validateValue("0", val, floats, chars, ranges));
+            Assert::IsTrue(handler.validateValue("-999", val, floats, chars, ranges));
+        }
+
+        TEST_METHOD(ValidBoundaryValues) {
+            FileIOHandler handler;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
+            int val;
+            Assert::IsTrue(handler.validateValue("1000", val, floats, chars, ranges));
+            Assert::IsTrue(handler.validateValue("-1000", val, floats, chars, ranges));
+        }
+
+        TEST_METHOD(OutOfBounds) {
+            FileIOHandler handler;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
+            int val;
+            Assert::IsFalse(handler.validateValue("1001", val, floats, chars, ranges));
+            Assert::AreEqual(1001, ranges[0]);
+
+            ranges.clear();
+            Assert::IsFalse(handler.validateValue("-1001", val, floats, chars, ranges));
+            Assert::AreEqual(-1001, ranges[0]);
+        }
+
+        TEST_METHOD(FloatNumbersRejected) {
+            FileIOHandler handler;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
+            int val;
+            Assert::IsFalse(handler.validateValue("3.14", val, floats, chars, ranges));
+            Assert::IsTrue(floats.find("3.14") != floats.end()); 
+
+            floats.clear();
+            Assert::IsFalse(handler.validateValue("5,5", val, floats, chars, ranges));
+            Assert::IsTrue(floats.find("5,5") != floats.end());
+        }
+
+        TEST_METHOD(GarbageLetters) {
+            FileIOHandler handler;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
+            int val;
+            Assert::IsFalse(handler.validateValue("abc", val, floats, chars, ranges));
+            Assert::IsTrue(chars.find("abc") != chars.end()); 
+        }
+
+        TEST_METHOD(PartialGarbage) {
+            FileIOHandler handler;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
+            int val;
+            Assert::IsFalse(handler.validateValue("12px", val, floats, chars, ranges));
+            Assert::IsTrue(chars.find("12px") != chars.end());
+        }
+
+        TEST_METHOD(ExtremeLargeNumberOverflow) {
+            FileIOHandler handler;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
+            int val;
+            Assert::IsFalse(handler.validateValue("999999999999999999", val, floats, chars, ranges));
+            Assert::IsTrue(chars.find("999999999999999999") != chars.end());
+        }
+
+        TEST_METHOD(EmptyToken) {
+            FileIOHandler handler;
+            std::set<std::string> floats, chars; 
+            std::vector<int> ranges; 
+            int val;
+            Assert::IsFalse(handler.validateValue("", val, floats, chars, ranges));
+            Assert::IsTrue(chars.find("") != chars.end());
         }
     };
 }
